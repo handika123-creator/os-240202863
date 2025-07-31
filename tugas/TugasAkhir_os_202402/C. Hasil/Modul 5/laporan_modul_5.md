@@ -1,97 +1,87 @@
 # 📝 Laporan Tugas Akhir
 
 **Mata Kuliah**: Sistem Operasi
+
 **Semester**: Genap / Tahun Ajaran 2024–2025
-**Nama**: `<Nama Lengkap>`
-**NIM**: `<Nomor Induk Mahasiswa>`
+
+**Nama**: `<Handika Dwi Ardiyanto>`
+
+**NIM**: `<240202863>`
+
 **Modul yang Dikerjakan**:
-`(Contoh: Modul 1 – System Call dan Instrumentasi Kernel)`
+`Modul 5 – Audit dan Keamanan Sistem (xv6-public)`
 
 ---
 
 ## 📌 Deskripsi Singkat Tugas
 
-Tuliskan deskripsi singkat dari modul yang Anda kerjakan. Misalnya:
+* **Modul 5 – Audit dan Keamanan Sistem**:
+  Membangun sistem audit log sederhana di dalam kernel xv6 untuk mencatat setiap system call yang dipanggil oleh proses, termasuk PID pemanggil, nomor syscall, dan waktu (tick). Audit log ini hanya bisa diakses oleh proses dengan PID 1 (init).
 
-* **Modul 1 – System Call dan Instrumentasi Kernel**:
-  Menambahkan dua system call baru, yaitu `getpinfo()` untuk melihat proses yang aktif dan `getReadCount()` untuk menghitung jumlah pemanggilan `read()` sejak boot.
 ---
 
 ## 🛠️ Rincian Implementasi
 
-Tuliskan secara ringkas namun jelas apa yang Anda lakukan:
+* Menambahkan struktur `audit_entry` dan array `audit_log[]` di `syscall.c`
+* Memodifikasi fungsi `syscall()` untuk mencatat semua system call yang valid
+* Menambahkan syscall baru `get_audit_log()`:
 
-### Contoh untuk Modul 1:
+  * Didefinisikan di `sysproc.c`
+  * Didaftarkan di `syscall.c`, `syscall.h`, `user.h`, `usys.S`
+* Membatasi akses audit log hanya untuk proses dengan `pid == 1`
+* Menambahkan program uji `audit.c` untuk membaca dan mencetak isi audit log
+* Mendaftarkan program `audit` ke dalam `Makefile`
 
-* Menambahkan dua system call baru di file `sysproc.c` dan `syscall.c`
-* Mengedit `user.h`, `usys.S`, dan `syscall.h` untuk mendaftarkan syscall
-* Menambahkan struktur `struct pinfo` di `proc.h`
-* Menambahkan counter `readcount` di kernel
-* Membuat dua program uji: `ptest.c` dan `rtest.c`
 ---
 
 ## ✅ Uji Fungsionalitas
 
-Tuliskan program uji apa saja yang Anda gunakan, misalnya:
+Program uji yang digunakan:
 
-* `ptest`: untuk menguji `getpinfo()`
-* `rtest`: untuk menguji `getReadCount()`
-* `cowtest`: untuk menguji fork dengan Copy-on-Write
-* `shmtest`: untuk menguji `shmget()` dan `shmrelease()`
-* `chmodtest`: untuk memastikan file `read-only` tidak bisa ditulis
-* `audit`: untuk melihat isi log system call (jika dijalankan oleh PID 1)
+* `audit`: membaca dan mencetak seluruh isi log system call.
+
+  * Jika dijalankan oleh proses non-init: akan ditolak.
+  * Jika dijalankan sebagai PID 1 (misalnya mengganti `init`), maka dapat mengakses log dengan benar.
 
 ---
 
 ## 📷 Hasil Uji
+<img width="960" height="540" alt="Screenshot 2025-07-31 125520" src="https://github.com/user-attachments/assets/f201fec9-3750-4551-b343-27e9cf57dff5" />
 
-Lampirkan hasil uji berupa screenshot atau output terminal. Contoh:
 
-### 📍 Contoh Output `cowtest`:
-
-```
-Child sees: Y
-Parent sees: X
-```
-
-### 📍 Contoh Output `shmtest`:
+### 📍 Output `audit` jika dijalankan bukan oleh PID 1:
 
 ```
-Child reads: A
-Parent reads: B
+Access denied or error.
 ```
 
-### 📍 Contoh Output `chmodtest`:
+### 📍 Output `audit` jika dijalankan sebagai proses `init` (PID 1):
 
 ```
-Write blocked as expected
+=== Audit Log ===
+[0] PID=1 SYSCALL=5 TICK=12
+[1] PID=1 SYSCALL=6 TICK=13
+[2] PID=2 SYSCALL=11 TICK=14
+...
 ```
 
-Jika ada screenshot:
-
-```
-![hasil cowtest](./screenshots/cowtest_output.png)
-```
+> Output mencetak log system call dari berbagai proses, lengkap dengan PID dan waktu.
 
 ---
 
 ## ⚠️ Kendala yang Dihadapi
 
-Tuliskan kendala (jika ada), misalnya:
-
-* Salah implementasi `page fault` menyebabkan panic
-* Salah memetakan alamat shared memory ke USERTOP
-* Proses biasa bisa akses audit log (belum ada validasi PID)
+* Lupa membatasi akses `get_audit_log()` hanya untuk `PID 1`, menyebabkan semua proses bisa membaca log.
+* Salah offset saat `memmove()` menyebabkan data log tidak lengkap.
+* Audit log bersifat volatile (di RAM), sehingga akan hilang setelah reboot.
+* Belum ada mekanisme sinkronisasi (lock), meskipun tidak terjadi race condition pada praktikum.
 
 ---
 
 ## 📚 Referensi
 
-Tuliskan sumber referensi yang Anda gunakan, misalnya:
-
-* Buku xv6 MIT: [https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf](https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf)
-* Repositori xv6-public: [https://github.com/mit-pdos/xv6-public](https://github.com/mit-pdos/xv6-public)
-* Stack Overflow, GitHub Issues, diskusi praktikum
+* Mencari dari sumber Ai dan chat GPT
+* Diskusi praktikum dan forum
+* Stack Overflow dan dokumentasi C (khusus penggunaan `memmove`, `argptr`, dan `argint`)
 
 ---
-
