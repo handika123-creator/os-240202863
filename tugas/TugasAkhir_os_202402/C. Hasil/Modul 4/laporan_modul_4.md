@@ -1,97 +1,90 @@
 # 📝 Laporan Tugas Akhir
 
 **Mata Kuliah**: Sistem Operasi
+
 **Semester**: Genap / Tahun Ajaran 2024–2025
-**Nama**: `<Nama Lengkap>`
-**NIM**: `<Nomor Induk Mahasiswa>`
+
+**Nama**: `<Handika Dwi Ardiyanto>`
+
+**NIM**: `<240202863>`
+
 **Modul yang Dikerjakan**:
-`(Contoh: Modul 1 – System Call dan Instrumentasi Kernel)`
+`Modul 4 – Subsistem Kernel Alternatif (xv6-public)`
 
 ---
 
 ## 📌 Deskripsi Singkat Tugas
 
-Tuliskan deskripsi singkat dari modul yang Anda kerjakan. Misalnya:
+Pada modul ini saya mengimplementasikan dua fitur baru ke dalam kernel xv6:
 
-* **Modul 1 – System Call dan Instrumentasi Kernel**:
-  Menambahkan dua system call baru, yaitu `getpinfo()` untuk melihat proses yang aktif dan `getReadCount()` untuk menghitung jumlah pemanggilan `read()` sejak boot.
+* Menambahkan system call baru `chmod(path, mode)` untuk mengatur mode file menjadi **read-only** atau **read-write** secara sederhana.
+* Menambahkan driver device baru `/dev/random` sebagai **pseudo-device** yang menghasilkan byte acak ketika dibaca oleh proses user.
+
 ---
 
 ## 🛠️ Rincian Implementasi
 
-Tuliskan secara ringkas namun jelas apa yang Anda lakukan:
+Langkah-langkah implementasi terbagi menjadi dua bagian utama:
 
-### Contoh untuk Modul 1:
+### A. System Call `chmod(path, mode)`
 
-* Menambahkan dua system call baru di file `sysproc.c` dan `syscall.c`
-* Mengedit `user.h`, `usys.S`, dan `syscall.h` untuk mendaftarkan syscall
-* Menambahkan struktur `struct pinfo` di `proc.h`
-* Menambahkan counter `readcount` di kernel
-* Membuat dua program uji: `ptest.c` dan `rtest.c`
+* Menambahkan field `short mode` pada `struct inode` di `fs.h` (hanya digunakan di memori).
+* Menambahkan syscall `chmod`:
+
+  * `syscall.h`: definisi `SYS_chmod`
+  * `user.h`: deklarasi prototipe
+  * `usys.S`: entry syscall
+  * `syscall.c`: registrasi syscall
+  * `sysfile.c`: implementasi `sys_chmod()`
+* Memodifikasi `filewrite()` di `file.c` untuk mengecek jika inode dalam mode **read-only**, maka `write()` akan gagal.
+* Menambahkan program uji `chmodtest.c` untuk menguji fungsi `chmod`.
+
+### B. Device `/dev/random`
+
+* Membuat file baru `random.c` berisi fungsi `randomread()` untuk menghasilkan byte acak.
+* Mendaftarkan device ke dalam `devsw[]` di `file.c` dengan `major = 3`.
+* Menambahkan baris `mknod("/dev/random", 1, 3)` pada `init.c` untuk membuat device node saat boot.
+* Menambahkan program uji `randomtest.c` untuk membaca byte acak dari `/dev/random`.
+
 ---
 
 ## ✅ Uji Fungsionalitas
 
-Tuliskan program uji apa saja yang Anda gunakan, misalnya:
+Program uji yang digunakan:
 
-* `ptest`: untuk menguji `getpinfo()`
-* `rtest`: untuk menguji `getReadCount()`
-* `cowtest`: untuk menguji fork dengan Copy-on-Write
-* `shmtest`: untuk menguji `shmget()` dan `shmrelease()`
-* `chmodtest`: untuk memastikan file `read-only` tidak bisa ditulis
-* `audit`: untuk melihat isi log system call (jika dijalankan oleh PID 1)
+* `chmodtest`: menguji bahwa file yang telah diubah menjadi read-only tidak dapat ditulis kembali.
+* `randomtest`: menguji bahwa `/dev/random` menghasilkan byte acak ketika dibaca.
 
 ---
 
 ## 📷 Hasil Uji
+<img width="960" height="540" alt="Screenshot 2025-07-31 123420" src="https://github.com/user-attachments/assets/ebcf8870-d11c-4a88-824d-3643c842812d" />
 
-Lampirkan hasil uji berupa screenshot atau output terminal. Contoh:
 
-### 📍 Contoh Output `cowtest`:
-
-```
-Child sees: Y
-Parent sees: X
-```
-
-### 📍 Contoh Output `shmtest`:
-
-```
-Child reads: A
-Parent reads: B
-```
-
-### 📍 Contoh Output `chmodtest`:
+### 📍 Output `chmodtest`:
 
 ```
 Write blocked as expected
 ```
 
-Jika ada screenshot:
+### 📍 Output `randomtest` (acak):
 
 ```
-![hasil cowtest](./screenshots/cowtest_output.png)
+83 47 202 19 124 88 53 17
 ```
 
----
+
 
 ## ⚠️ Kendala yang Dihadapi
 
-Tuliskan kendala (jika ada), misalnya:
-
-* Salah implementasi `page fault` menyebabkan panic
-* Salah memetakan alamat shared memory ke USERTOP
-* Proses biasa bisa akses audit log (belum ada validasi PID)
+* Lupa menambahkan `chmod` ke dalam `usys.S` menyebabkan syscall tidak dikenali.
+* Salah registrasi index `devsw[]` menyebabkan `/dev/random` tidak berfungsi.
+* Field `mode` di `inode` sebenarnya tidak tersimpan di disk layout xv6, sehingga mode akan hilang saat reboot.
 
 ---
 
 ## 📚 Referensi
 
-Tuliskan sumber referensi yang Anda gunakan, misalnya:
-
-* Buku xv6 MIT: [https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf](https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf)
-* Repositori xv6-public: [https://github.com/mit-pdos/xv6-public](https://github.com/mit-pdos/xv6-public)
-* Stack Overflow, GitHub Issues, diskusi praktikum
-
+* Mencari referensi dari Ai atau Chat GPT
+* Diskusi praktikum dan forum internal
 ---
-
