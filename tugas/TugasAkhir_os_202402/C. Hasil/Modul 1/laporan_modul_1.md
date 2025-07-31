@@ -1,97 +1,100 @@
-# 📝 Laporan Tugas Akhir
+📝 Laporan Tugas Akhir
 
 **Mata Kuliah**: Sistem Operasi
 **Semester**: Genap / Tahun Ajaran 2024–2025
-**Nama**: `<Nama Lengkap>`
-**NIM**: `<Nomor Induk Mahasiswa>`
+**Nama**: `Handika Dwi Ardiyanto`
+**NIM**: `<240202863>`
 **Modul yang Dikerjakan**:
-`(Contoh: Modul 1 – System Call dan Instrumentasi Kernel)`
+`Modul 1 – System Call dan Instrumentasi Kernel`
 
 ---
 
 ## 📌 Deskripsi Singkat Tugas
 
-Tuliskan deskripsi singkat dari modul yang Anda kerjakan. Misalnya:
+Pada modul ini, saya mengimplementasikan dua system call baru ke dalam kernel xv6-public. System call tersebut bertujuan untuk:
 
-* **Modul 1 – System Call dan Instrumentasi Kernel**:
-  Menambahkan dua system call baru, yaitu `getpinfo()` untuk melihat proses yang aktif dan `getReadCount()` untuk menghitung jumlah pemanggilan `read()` sejak boot.
+* Mengambil informasi proses aktif melalui `getpinfo()`
+* Menghitung jumlah total pemanggilan fungsi `read()` sejak sistem boot dengan `getreadcount()`
+
 ---
 
 ## 🛠️ Rincian Implementasi
 
-Tuliskan secara ringkas namun jelas apa yang Anda lakukan:
+Langkah-langkah implementasi yang dilakukan adalah sebagai berikut:
 
-### Contoh untuk Modul 1:
+* Menambahkan struktur `struct pinfo` ke dalam file `proc.h`
+* Menambahkan global counter `readcount` di `sysproc.c`
+* Menambahkan nomor syscall baru di `syscall.h`
+* Mendaftarkan syscall ke tabel di `syscall.c`
+* Menambahkan deklarasi syscall baru di `user.h` dan `usys.S`
+* Mengimplementasikan `sys_getpinfo()` dan `sys_getreadcount()` di `sysproc.c`
+* Menambahkan counter `readcount++` di awal fungsi `sys_read()` di `sysfile.c`
+* Membuat dua program uji:
 
-* Menambahkan dua system call baru di file `sysproc.c` dan `syscall.c`
-* Mengedit `user.h`, `usys.S`, dan `syscall.h` untuk mendaftarkan syscall
-* Menambahkan struktur `struct pinfo` di `proc.h`
-* Menambahkan counter `readcount` di kernel
-* Membuat dua program uji: `ptest.c` dan `rtest.c`
+  * `ptest.c` → untuk menguji `getpinfo()`
+  * `rtest.c` → untuk menguji `getreadcount()`
+* Menambahkan file uji ke bagian `UPROGS` di `Makefile`
+
 ---
 
 ## ✅ Uji Fungsionalitas
 
-Tuliskan program uji apa saja yang Anda gunakan, misalnya:
+Program uji yang digunakan:
 
-* `ptest`: untuk menguji `getpinfo()`
-* `rtest`: untuk menguji `getReadCount()`
-* `cowtest`: untuk menguji fork dengan Copy-on-Write
-* `shmtest`: untuk menguji `shmget()` dan `shmrelease()`
-* `chmodtest`: untuk memastikan file `read-only` tidak bisa ditulis
-* `audit`: untuk melihat isi log system call (jika dijalankan oleh PID 1)
+* ✅ `ptest` — menguji system call `getpinfo()`
+* ✅ `rtest` — menguji system call `getreadcount()`
+
+Contoh perintah pengujian di shell xv6:
+
+```bash
+$ ptest
+PID	MEM	NAME
+1	4096	init
+2	2048	sh
+3	2048	ptest
+...
+
+$ rtest
+Read Count Sebelum: 4
+hello
+Read Count Setelah: 5
+```
 
 ---
 
 ## 📷 Hasil Uji
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/46a8e8b3-0872-4ba0-a817-dbeec83c567d" />
 
-Lampirkan hasil uji berupa screenshot atau output terminal. Contoh:
 
-### 📍 Contoh Output `cowtest`:
-
-```
-Child sees: Y
-Parent sees: X
-```
-
-### 📍 Contoh Output `shmtest`:
+### 📍 Output `ptest`:
 
 ```
-Child reads: A
-Parent reads: B
+PID	MEM	NAME
+1	4096	init
+2	2048	sh
+3	2048	ptest
 ```
 
-### 📍 Contoh Output `chmodtest`:
+### 📍 Output `rtest`:
 
 ```
-Write blocked as expected
+Read Count Sebelum: 4
+hello
+Read Count Setelah: 5
 ```
-
-Jika ada screenshot:
-
-```
-![hasil cowtest](./screenshots/cowtest_output.png)
-```
-
----
 
 ## ⚠️ Kendala yang Dihadapi
 
-Tuliskan kendala (jika ada), misalnya:
-
-* Salah implementasi `page fault` menyebabkan panic
-* Salah memetakan alamat shared memory ke USERTOP
-* Proses biasa bisa akses audit log (belum ada validasi PID)
+* Awalnya salah menggunakan pointer `ptable` pada `sys_getpinfo`, sehingga data tidak muncul di user-level
+* Lupa menambahkan forward declaration `struct pinfo` di `user.h` menyebabkan error saat kompilasi
+* Lupa mendaftarkan program `ptest` dan `rtest` di `Makefile`, menyebabkan program tidak tersedia di shell xv6
 
 ---
 
 ## 📚 Referensi
 
-Tuliskan sumber referensi yang Anda gunakan, misalnya:
-
-* Buku xv6 MIT: [https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf](https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf)
-* Repositori xv6-public: [https://github.com/mit-pdos/xv6-public](https://github.com/mit-pdos/xv6-public)
-* Stack Overflow, GitHub Issues, diskusi praktikum
+* Mencari pemahaman dan pengarahan dari ai ataupun chat GPT
+* Diskusi praktikum dan dokumentasi kernel
+* Stack Overflow untuk error debugging umum di `xv6`
 
 ---
-
