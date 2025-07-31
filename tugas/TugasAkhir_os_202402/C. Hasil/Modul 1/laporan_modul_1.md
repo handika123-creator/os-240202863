@@ -2,8 +2,11 @@
 
 **Mata Kuliah**: Sistem Operasi
 **Semester**: Genap / Tahun Ajaran 2024–2025
+
 **Nama**: `Handika Dwi Ardiyanto`
+
 **NIM**: `<240202863>`
+
 **Modul yang Dikerjakan**:
 `Modul 1 – System Call dan Instrumentasi Kernel`
 
