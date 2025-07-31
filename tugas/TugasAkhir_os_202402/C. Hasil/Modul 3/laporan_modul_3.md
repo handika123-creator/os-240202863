@@ -1,51 +1,64 @@
 # 📝 Laporan Tugas Akhir
 
 **Mata Kuliah**: Sistem Operasi
+
 **Semester**: Genap / Tahun Ajaran 2024–2025
-**Nama**: `<Nama Lengkap>`
-**NIM**: `<Nomor Induk Mahasiswa>`
+
+**Nama**: `<Handika Dwi Ardiyanto>`
+
+**NIM**: `<240202863>`
+
 **Modul yang Dikerjakan**:
-`(Contoh: Modul 1 – System Call dan Instrumentasi Kernel)`
+`Modul 3 – Manajemen Memori Tingkat Lanjut`
 
 ---
 
 ## 📌 Deskripsi Singkat Tugas
 
-Tuliskan deskripsi singkat dari modul yang Anda kerjakan. Misalnya:
+* **Modul 3 – Manajemen Memori Tingkat Lanjut**:
+  Mengimplementasikan dua fitur penting manajemen memori pada kernel xv6, yaitu:
 
-* **Modul 1 – System Call dan Instrumentasi Kernel**:
-  Menambahkan dua system call baru, yaitu `getpinfo()` untuk melihat proses yang aktif dan `getReadCount()` untuk menghitung jumlah pemanggilan `read()` sejak boot.
+  * **Copy-on-Write Fork (CoW)** untuk efisiensi `fork()` melalui penundaan salin memori.
+  * **Shared Memory System V-style** antar proses menggunakan key dan reference counting.
+
 ---
 
 ## 🛠️ Rincian Implementasi
 
-Tuliskan secara ringkas namun jelas apa yang Anda lakukan:
+Langkah-langkah implementasi pada modul ini meliputi:
 
-### Contoh untuk Modul 1:
+### A. Copy-on-Write Fork (CoW)
 
-* Menambahkan dua system call baru di file `sysproc.c` dan `syscall.c`
-* Mengedit `user.h`, `usys.S`, dan `syscall.h` untuk mendaftarkan syscall
-* Menambahkan struktur `struct pinfo` di `proc.h`
-* Menambahkan counter `readcount` di kernel
-* Membuat dua program uji: `ptest.c` dan `rtest.c`
+* Menambahkan array `ref_count[]` global di `vm.c` untuk setiap halaman fisik.
+* Membuat fungsi `incref()` dan `decref()` untuk manajemen reference count.
+* Menambahkan flag baru `PTE_COW` di `mmu.h`.
+* Membuat fungsi baru `cowuvm()` sebagai pengganti `copyuvm()` saat `fork()`.
+* Mengubah `fork()` di `proc.c` agar menggunakan `cowuvm()`.
+* Menangani `page fault` write di `trap.c` untuk melakukan salin halaman (copy-on-write).
+
+### B. Shared Memory ala System V
+
+* Menambahkan struktur `shmtab[]` di `vm.c` untuk menyimpan informasi shared memory.
+* Menambahkan syscall `shmget(int key)` untuk alokasi dan pemetaan halaman bersama.
+* Menambahkan syscall `shmrelease(int key)` untuk melepaskan shared memory.
+* Registrasi syscall ke `syscall.h`, `syscall.c`, `user.h`, dan `usys.S`.
+
 ---
 
 ## ✅ Uji Fungsionalitas
 
-Tuliskan program uji apa saja yang Anda gunakan, misalnya:
+Program uji yang digunakan:
 
-* `ptest`: untuk menguji `getpinfo()`
-* `rtest`: untuk menguji `getReadCount()`
 * `cowtest`: untuk menguji fork dengan Copy-on-Write
-* `shmtest`: untuk menguji `shmget()` dan `shmrelease()`
-* `chmodtest`: untuk memastikan file `read-only` tidak bisa ditulis
-* `audit`: untuk melihat isi log system call (jika dijalankan oleh PID 1)
+* `shmtest`: untuk menguji fungsi `shmget()` dan `shmrelease()`
 
 ---
 
 ## 📷 Hasil Uji
+<img width="960" height="540" alt="Screenshot 2025-07-31 121200" src="https://github.com/user-attachments/assets/9e991e2a-661e-4486-9f1e-2aca20720a6d" />
+<img width="960" height="540" alt="Screenshot 2025-07-31 121506" src="https://github.com/user-attachments/assets/b590ce99-6f5d-4cf1-855c-3e0d8e92a53c" />
 
-Lampirkan hasil uji berupa screenshot atau output terminal. Contoh:
+
 
 ### 📍 Contoh Output `cowtest`:
 
@@ -54,6 +67,8 @@ Child sees: Y
 Parent sees: X
 ```
 
+> Menunjukkan bahwa CoW berhasil: halaman awal dibagi, lalu disalin saat child menulis.
+
 ### 📍 Contoh Output `shmtest`:
 
 ```
@@ -61,37 +76,24 @@ Child reads: A
 Parent reads: B
 ```
 
-### 📍 Contoh Output `chmodtest`:
+> Menunjukkan bahwa child dan parent berbagi satu halaman shared memory.
 
-```
-Write blocked as expected
-```
 
-Jika ada screenshot:
-
-```
-![hasil cowtest](./screenshots/cowtest_output.png)
-```
 
 ---
 
 ## ⚠️ Kendala yang Dihadapi
 
-Tuliskan kendala (jika ada), misalnya:
-
-* Salah implementasi `page fault` menyebabkan panic
-* Salah memetakan alamat shared memory ke USERTOP
-* Proses biasa bisa akses audit log (belum ada validasi PID)
+* Salah pengaturan flag `PTE_COW` menyebabkan page fault tidak ditangani.
+* Lupa memanggil `incref()` saat `kalloc()` pada CoW → menyebabkan double-free.
+* Salah pemetaan alamat shared memory di user space (USERTOP) → menyebabkan crash.
+* Potensi race condition pada `shmtab[]` karena belum menggunakan locking.
 
 ---
 
 ## 📚 Referensi
 
-Tuliskan sumber referensi yang Anda gunakan, misalnya:
-
-* Buku xv6 MIT: [https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf](https://pdos.csail.mit.edu/6.828/2018/xv6/book-rev11.pdf)
-* Repositori xv6-public: [https://github.com/mit-pdos/xv6-public](https://github.com/mit-pdos/xv6-public)
-* Stack Overflow, GitHub Issues, diskusi praktikum
+* Mencari referensi dari Ai dan chat GPT
+* Diskusi kelas dan praktikum
 
 ---
-
