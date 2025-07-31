@@ -66,12 +66,6 @@ Parent selesai
 Child 2 selesai
 Child 1 selesai
 Parent selesai
-```
-
-Jika ada screenshot terminal saat pengujian:
-
-
-
 ---
 
 ## ⚠️ Kendala yang Dihadapi
