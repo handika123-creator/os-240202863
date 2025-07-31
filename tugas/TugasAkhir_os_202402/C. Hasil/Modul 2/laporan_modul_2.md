@@ -63,6 +63,7 @@ Parent selesai
 ### 📍 Output `ptest`:
 
 ```
+```
 Child 2 selesai
 Child 1 selesai
 Parent selesai
