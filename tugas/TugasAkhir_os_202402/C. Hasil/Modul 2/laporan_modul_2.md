@@ -60,8 +60,6 @@ Parent selesai
 <img width="960" height="540" alt="Screenshot 2025-07-28 171448" src="https://github.com/user-attachments/assets/db284e06-413a-492f-9ee2-b29d0472c56e" />
 
 
-### 📍 Output `ptest`:
-
 ```
 ```
 Child 2 selesai
